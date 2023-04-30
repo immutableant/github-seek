@@ -1,0 +1,11 @@
+schema: https://api.github.com/graphql
+headers:
+  Authorization: Bearer <<>> # replace with your github token
+  User-Agent: GitHub GraphQL Explorer
+documents: 'src/**/*.graphql'
+generates:
+  src/generated/graphql.tsx:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo

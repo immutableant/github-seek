@@ -1,0 +1,91 @@
+query SearchRepositories($query: String!, $first: Int!, $after: String) {
+  search(query: $query, type: REPOSITORY, first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        ... on Repository {
+          id
+          name
+          owner {
+            login
+          }
+          description
+          url
+          stargazers {
+            totalCount
+          }
+          primaryLanguage {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+
+query RepositoryDetails($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    id
+    name
+    owner {
+      login
+    }
+    description
+    url
+    stargazers {
+      totalCount
+    }
+    forks {
+      totalCount
+    }
+    primaryLanguage {
+      name
+    }
+    updatedAt
+  }
+}
+
+query GetUserDetails($login: String!) {
+  user(login: $login) {
+    id
+    login
+    avatarUrl
+    url
+    bio
+    name
+    email
+    location
+    createdAt
+    followers {
+      totalCount
+    }
+    following {
+      totalCount
+    }
+    repositories {
+      totalCount
+    }
+  }
+}
+
+query SearchUsers($query: String!, $first: Int!, $after: String) {
+  search(query: $query, type: USER, first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        ... on User {
+          id
+          login
+          avatarUrl
+          url
+        }
+      }
+    }
+  }
+}
