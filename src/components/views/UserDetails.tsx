@@ -47,7 +47,7 @@ const UserDetails: React.FC = () => {
   }, [data]);
 
   return (
-    <Layout>
+    <>
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
@@ -76,7 +76,7 @@ const UserDetails: React.FC = () => {
           </Card>
         )
       )}
-    </Layout>
+    </>
   );
 };
 

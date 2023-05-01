@@ -46,7 +46,7 @@ const RepositoryDetails: React.FC = () => {
   }, [data]);
 
   return (
-    <Layout>
+    <>
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
@@ -73,7 +73,7 @@ const RepositoryDetails: React.FC = () => {
         </Card>
         )
       )}
-    </Layout>
+    </>
   );
 };
 

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { ListGroup, Pagination, Container, Row, Col, Card } from "react-bootstrap";
+import {
+  ListGroup,
+  Pagination,
+  Container,
+  Row,
+  Col,
+  Card,
+} from "react-bootstrap";
 import { useQuery } from "@apollo/client";
 import { SearchRepositoriesDocument } from "../../generated/graphql";
-
+import { Link } from "react-router-dom";
 
 interface Repository {
   id: string;
@@ -23,13 +30,15 @@ const Repositories: React.FC<RepositoriesProps> = ({ searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { loading, error, data, refetch } = useQuery(SearchRepositoriesDocument, {
-    variables: {
-      query: searchQuery,
-      first: 10, // The number of results per page
-      after: null, // Replace with logic for handling pagination
-    },
-    skip: !searchQuery || searchQuery.trim() === '',
+  const [queryVariables, setQueryVariables] = useState({
+    query: searchQuery,
+    first: 10,
+    after: null,
+  });
+
+  const { loading, error, data } = useQuery(SearchRepositoriesDocument, {
+    variables: queryVariables,
+    skip: !searchQuery || searchQuery.trim() === "",
   });
 
   useEffect(() => {
@@ -38,19 +47,31 @@ const Repositories: React.FC<RepositoriesProps> = ({ searchQuery }) => {
       setTotalPages(
         data.search.pageInfo.hasNextPage ? currentPage + 1 : currentPage
       );
+    } else {
+      setRepositories([]);
     }
   }, [data, currentPage]);
 
   useEffect(() => {
-    if (searchQuery) {
-      refetch();
-    } else {
-      setRepositories([]);
-    }
-  }, [searchQuery, currentPage, refetch]);
+    setQueryVariables({ query: searchQuery, first: 10, after: null });
+  }, [searchQuery]);
 
-  const handlePagination = (eventKey: number) => {
-    setCurrentPage(Math.max(1, Math.min(eventKey, totalPages)));
+  const handlePagination = (direction: "previous" | "next") => {
+    if (direction === "previous" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      setQueryVariables({
+        query: searchQuery,
+        first: 10,
+        after: data.search.pageInfo.startCursor,
+      });
+    } else if (direction === "next" && data?.search.pageInfo.hasNextPage) {
+      setCurrentPage(currentPage + 1);
+      setQueryVariables({
+        query: searchQuery,
+        first: 10,
+        after: data.search.pageInfo.endCursor,
+      });
+    }
   };
 
   return (
@@ -64,13 +85,22 @@ const Repositories: React.FC<RepositoriesProps> = ({ searchQuery }) => {
           <Container>
             <Row>
               {repositories.map((repo) => (
-                <Col key={repo.id} xs={12} sm={6} md={4} lg={3} className="mb-4">
+                <Col
+                  key={repo.id}
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                  className="mb-4"
+                >
                   <Card>
                     <Card.Body>
                       <Card.Title>
-                        <a href={repo.url} target="_blank" rel="noreferrer">
+                        <Link
+                          to={`/repository/${repo.owner.login}/${repo.name}`}
+                        >
                           {repo.name}
-                        </a>
+                        </Link>
                       </Card.Title>
                       <Card.Subtitle className="mb-2 text-muted">
                         by {repo.owner.login}
@@ -86,12 +116,12 @@ const Repositories: React.FC<RepositoriesProps> = ({ searchQuery }) => {
             <Pagination className="justify-content-center mt-4">
               <Pagination.Prev
                 disabled={currentPage === 1}
-                onClick={() => handlePagination(currentPage - 1)}
+                onClick={() => handlePagination("previous")}
               />
               <Pagination.Item active>{currentPage}</Pagination.Item>
               <Pagination.Next
-                disabled={currentPage === totalPages}
-                onClick={() => handlePagination(currentPage + 1)}
+                disabled={!data?.search.pageInfo.hasNextPage}
+                onClick={() => handlePagination("next")}
               />
             </Pagination>
           )}
